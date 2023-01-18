@@ -26,6 +26,8 @@ jobs:
         with:
           args: >
             -X
+            -Dsonar.verbose=true
+            -Dsonar.working.directory=/tmp/scannerwork
       - name: Print permissions for all files
         run: ls -alFR || true
 #       - uses: actions/checkout@v3
