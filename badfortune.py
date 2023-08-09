@@ -24,10 +24,21 @@
 
 import struct, random, string
 
+simple = 'test'
+
 # C long variables are different sizes on 32-bit and 64-bit machines,
 # so we have to measure how big they are on the machine where this is running.
 LONG_SIZE = struct.calcsize('L')
 is_64_bit = (LONG_SIZE == 8)
+
+def func(a, b, c):
+    return a * b * c
+
+func(6, 93, 31, c=62) # Noncompliant: argument "c" is duplicated
+
+params = {'c':31}
+func(6, 93, 31, **params) # Noncompliant: argument "c" is duplicated
+func(6, 93, c=62, **params) # Noncompliant: argument "c" is duplicated
 
 def get(filename):
     "Select a random quotation, using a pregenerated .dat file"
