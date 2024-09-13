@@ -1,36 +1,39 @@
-# This is a basic workflow to help you get started with Actions
-
-name: CI
-
-# Controls when the workflow will run
 on:
-#   push:
-#     branches:
-#       - main # or the name of your main branch
-#   pull_request:
-#     types: [opened, synchronize, reopened]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-  # publish blog using webhook
-  repository_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+  # Trigger analysis when pushing in master or pull requests, and when creating
+  # a pull request. 
+  push:
+    branches:
+      - main
+  pull_request:
+      types: [opened, synchronize, reopened]
+name: Main Workflow
 jobs:
-  check-what-to-build:
-    name: Check what to build
-    outputs:
-      run_cli: ${{ steps.check_files.outputs.run_cli }}
+  sonarqube:
     runs-on: ubuntu-latest
     steps:
-      - name: check branch and modified files
-        id: check_files
-        run: echo "::set-output name=run_cli::false"
-  # This workflow contains a single job called "build"
-  skipped-cli-qg:
-    needs: check-what-to-build
-    if: needs.check-what-to-build.outputs.run_cli == 'false'
-    name: "[GitHub project] SonarQube Code Analysis"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Exit with success
-        run: exit 0
+    - uses: actions/checkout@v3
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting.
+        fetch-depth: 0
+
+    # Triggering SonarQube analysis as results of it are required by Quality Gate check.
+    - name: SonarQube Scan
+      uses: sonarsource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+    # Check the Quality Gate status.
+    - name: SonarQube Quality Gate check
+      id: sonarqube-quality-gate-check
+      uses: sonarsource/sonarqube-quality-gate-action@master
+      # Force to fail step after specific time.
+      timeout-minutes: 5
+      env:
+       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} #OPTIONAL
+
+    # Optionally you can use the output from the Quality Gate in another step.
+    # The possible outputs of the `quality-gate-status` variable are `PASSED`, `WARN` or `FAILED`.
+    - name: "Example show SonarQube Quality Gate Status value"
+      run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
