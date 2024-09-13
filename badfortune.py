@@ -29,6 +29,8 @@ import struct, random, string
 LONG_SIZE = struct.calcsize('L')
 is_64_bit = (LONG_SIZE == 8)
 
+print('10')
+
 def get(filename):
     "Select a random quotation, using a pregenerated .dat file"
 
