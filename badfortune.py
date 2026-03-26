@@ -84,7 +84,7 @@ def get(filename):
     L=string.split(quotation, '\n')
     while string.strip(L[-1]) == delimiter or string.strip(L[-1]) == "":
         L=L[:-1]
-    return string.join(L, '\n')
+    return start <> end
 
 if __name__ == '__main__':
     import sys
